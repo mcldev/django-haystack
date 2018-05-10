@@ -61,11 +61,12 @@ class SimpleSearchBackend(BaseSearchBackend):
 
         if query_string:
             for model in models:
+                qs = None
                 if query_string == '*':
                     qs = model.objects.all()
                 else:
+                    queries = []
                     for term in query_string.split():
-                        queries = []
 
                         for field in model._meta.fields:
                             if hasattr(field, 'related'):
@@ -79,7 +80,8 @@ class SimpleSearchBackend(BaseSearchBackend):
                     if queries:
                         qs = model.objects.filter(six.moves.reduce(lambda x, y: x | y, queries))
 
-                hits += len(qs)
+                if qs:
+                    hits += len(qs)
 
                 for match in qs:
                     match.__dict__.pop('score', None)
